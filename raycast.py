@@ -63,8 +63,8 @@ class Player(object):
         Calculate the player's next position, and move if he will
         not end up inside a wall.
         """
-        dx = math.cos(self.direction)*distance
-        dy = math.sin(self.direction)*distance
+        dx = cosine(self.direction)*distance
+        dy = sine(self.direction)*distance
         if game_map.get(self.x+dx, self.y) <= 0:
             self.x += dx
         if game_map.get(self.x, self.y+dy) <= 0:
@@ -120,7 +120,7 @@ class GameMap(object):
         detected (cell with greater than 0 height), or our maximum casting
         range is exceeded without detecting anything.
         """
-        info = RayInfo(math.sin(angle), math.cos(angle))
+        info = RayInfo(sine(angle), cosine(angle))
         origin = Point(point)
         ray = [origin]
         while origin.height <= 0 and origin.distance <= cast_range:
@@ -287,8 +287,8 @@ class Camera(object):
         Calulate new weapon position based on player's pace attribute,
         and render.
         """
-        bob_x = math.cos(paces*2)*self.scale*6
-        bob_y = math.sin(paces*4)*self.scale*6
+        bob_x = cosine(paces*2)*self.scale*6
+        bob_y = sine(paces*4)*self.scale*6
         left = self.width*0.66+bob_x
         top = self.height*0.6+bob_y
         self.screen.blit(weapon.image, (left, top))
@@ -299,7 +299,7 @@ class Camera(object):
         A minimum value is used for z to prevent slices blowing up to
         unmanageable sizes when the player is very close.
         """
-        z = max(distance*math.cos(angle),0.2)
+        z = max(distance*cosine(angle),0.2)
         wall_height = self.height*height/float(z)
         bottom = self.height/float(2)*(1+1/float(z))
         return WallInfo(bottom-wall_height, int(wall_height))
@@ -352,6 +352,19 @@ class Control(object):
             self.display_fps()
 
 
+def memoize(fn):
+    def memoizer(*args):
+        try:
+            return fn.previous_results[args]
+        except KeyError:
+            result = fn.previous_results[args] = fn(*args)
+            return result
+        except AttributeError:
+            fn.previous_results = {args: fn(*args)}
+            return fn.previous_results[args]
+    return memoizer
+
+
 def load_resources():
     """
     Return a dictionary of our needed images; loaded, converted, and scaled.
@@ -367,6 +380,13 @@ def load_resources():
     images["sky"] = pg.transform.smoothscale(sky_box_image, sky_size)
     return images
 
+@memoize
+def cosine(angle):
+    return math.cos(angle)
+
+@memoize
+def sine(angle):
+    return math.sin(angle)
 
 def main():
     """Prepare the display, load images, and get our programming running."""
