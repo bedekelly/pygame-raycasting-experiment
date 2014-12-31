@@ -1,6 +1,6 @@
 import os
 import sys
-import math
+from math import sin, cos, pi, floor, ceil, hypot
 import random
 import itertools
 import pygame as pg
@@ -14,9 +14,9 @@ if sys.version_info[0] == 2:
 
 CAPTION = "Ray-Casting with Python"
 SCREEN_SIZE = (1200, 600)
-CIRCLE = 2*math.pi
+CIRCLE = 2*pi
 SCALE = (SCREEN_SIZE[0]+SCREEN_SIZE[1])/1200.0
-FIELD_OF_VIEW = math.pi*0.4
+FIELD_OF_VIEW = pi*0.4
 NO_WALL = float("inf")
 RAIN_COLOR = (255, 255, 255, 40)
 
@@ -101,7 +101,7 @@ class GameMap(object):
 
     def get(self, x, y):
         """A method to check if a given coordinate is colliding with a wall."""
-        point = (int(math.floor(x)), int(math.floor(y)))
+        point = (int(floor(x)), int(floor(y)))
         return self.wall_grid.get(point, -1)
 
     def randomize(self):
@@ -163,11 +163,11 @@ class Point(object):
         """
         try:
             x, y = (self.y,self.x) if invert else (self.x,self.y)
-            dx = math.floor(x+1)-x if run > 0 else math.ceil(x-1)-x
+            dx = floor(x+1)-x if run > 0 else ceil(x-1)-x
             dy = dx*(rise/run)
             next_x = y+dy if invert else x+dx
             next_y = x+dx if invert else y+dy
-            length = math.hypot(dx, dy)
+            length = hypot(dx, dy)
         except ZeroDivisionError:
             next_x = next_y = None
             length = NO_WALL
@@ -187,7 +187,7 @@ class Point(object):
             self.shading = 2 if info.cos<0 else 0
         else:
             self.shading = 2 if info.sin<0 else 1
-        self.offset = offset-math.floor(offset)
+        self.offset = offset-floor(offset)
         return self
 
 
@@ -241,12 +241,12 @@ class Camera(object):
         If the height is greater than zero, render the column (and shadow).
         Rain drops will be drawn for every step.
         """
-        left = int(math.floor(column*self.spacing))
+        left = int(floor(column*self.spacing))
         for ray_index in range(len(ray)-1, -1, -1):
             step = ray[ray_index]
             if step.height > 0:
                 texture = game_map.wall_texture
-                width = int(math.ceil(self.spacing))
+                width = int(ceil(self.spacing))
                 texture_x = int(texture.width*step.offset) ###
                 wall = self.project(step.height, angle, step.distance)
                 image_location = pg.Rect(texture_x, 0, 1, texture.height)
@@ -316,7 +316,7 @@ class Control(object):
         self.fps = 60.0
         self.keys = pg.key.get_pressed()
         self.done = False
-        self.player = Player(15.3, -1.2, math.pi*0.3)
+        self.player = Player(15.3, -1.2, pi*0.3)
         self.game_map = GameMap(32)
         self.camera = Camera(self.screen, 300)
 
@@ -382,11 +382,11 @@ def load_resources():
 
 @memoize
 def cosine(angle):
-    return math.cos(angle)
+    return cos(angle)
 
 @memoize
 def sine(angle):
-    return math.sin(angle)
+    return sin(angle)
 
 def main():
     """Prepare the display, load images, and get our programming running."""
